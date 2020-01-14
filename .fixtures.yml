@@ -1,9 +1,12 @@
 fixtures:
   repositories:
-    apt: "https://github.com/puppetlabs/puppetlabs-apt.git"
-    docker: "https://github.com/puppetlabs/puppetlabs-docker.git"
-    concat: "https://github.com/puppetlabs/puppetlabs-concat.git"
-    stdlib: "https://github.com/puppetlabs/puppetlabs-stdlib.git"
+    apt: https://github.com/puppetlabs/puppetlabs-apt.git
+    concat:
+      repo: https://github.com/syseleven/puppetlabs-concat.git
+      branch: deferred-function
+    docker: https://github.com/puppetlabs/puppetlabs-docker.git
+    stdlib: https://github.com/puppetlabs/puppetlabs-stdlib.git
+    translate: https://github.com/puppetlabs/puppetlabs-translate.git
     yumrepo_core:
       repo: https://github.com/puppetlabs/puppetlabs-yumrepo_core.git
       puppet_version: ">= 6.0.0"

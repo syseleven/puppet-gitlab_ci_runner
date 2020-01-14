@@ -7,6 +7,14 @@ describe 'gitlab_ci_runner', type: :class do
 
   on_supported_os.each do |os, facts|
     context "on #{os}" do
+      before do
+        # Make 'gitlab_ci_runner::register_to_file' think that we already have a token on disk
+        # This ensure the function won't call a Gitlab server to try getting the auth token.
+        allow(File).to receive(:exist?).and_call_original
+        allow(File).to receive(:exist?).with('/etc/gitlab-runner/auth-token-testrunner').and_return(true)
+        allow(File).to receive(:read).and_call_original
+        allow(File).to receive(:read).with('/etc/gitlab-runner/auth-token-testrunner').and_return('authtoken')
+      end
       let(:facts) do
         # Workaround a puppet-spec issue Debian 9
         # https://github.com/rodjek/rspec-puppet/issues/629
@@ -23,7 +31,7 @@ describe 'gitlab_ci_runner', type: :class do
             'docker-image' => 'ubuntu:trusty'
           },
           'runners' => {
-            'test_runner' => {}
+            'testrunner' => {}
           }
         }
       end
@@ -164,35 +172,21 @@ describe 'gitlab_ci_runner', type: :class do
       end
 
       context 'with ensure => present' do
-        let(:params) do
-          super().merge(
-            'runners' => {
-              'test_runner' => {
-                'ensure' => 'present'
-              }
-            }
-          )
-        end
-
-        it { is_expected.to contain_gitlab_ci_runner__runner('test_runner') }
-        it { is_expected.to contain_exec('Register_runner_test_runner').with('command' => %r{/usr/bin/[^ ]+ register }) }
-        it { is_expected.not_to contain_exec('Register_runner_test_runner').with('command' => %r{--ensure=}) }
+        it { is_expected.to contain_gitlab_ci_runner__runner('testrunner').with_ensure('present') }
       end
 
       context 'with ensure => absent' do
         let(:params) do
           super().merge(
             'runners' => {
-              'test_runner' => {
+              'testrunner' => {
                 'ensure' => 'absent'
               }
             }
           )
         end
 
-        it { is_expected.to contain_gitlab_ci_runner__runner('test_runner') }
-        it { is_expected.to contain_exec('Unregister_runner_test_runner').with('command' => %r{/usr/bin/[^ ]+ unregister }) }
-        it { is_expected.not_to contain_exec('Unregister_runner_test_runner').with('command' => %r{--ensure=}) }
+        it { is_expected.to contain_gitlab_ci_runner__runner('testrunner').with_ensure('absent') }
       end
 
       context 'with manage_repo => true' do

@@ -54,7 +54,7 @@ class gitlab_ci_runner (
   Optional[Integer]                      $check_interval           = undef,
   Optional[String]                       $sentry_dsn               = undef,
   Optional[Pattern[/.*:.+/]]             $listen_address           = undef,
-  Boolean                                $manage_docker            = true,
+  Boolean                                $manage_docker            = false,
   Boolean                                $manage_repo              = true,
   String                                 $package_ensure           = installed,
   String                                 $package_name             = 'gitlab-runner',
@@ -73,6 +73,8 @@ class gitlab_ci_runner (
         image_tag => 'trusty',
       },
     }
+
+    include docker
     class { 'docker::images':
       images => $docker_images,
     }
@@ -92,16 +94,14 @@ class gitlab_ci_runner (
 
   $runners.each |$runner_name,$config| {
     $_config = merge($runner_defaults, $config)
-    $ensure  = $_config['ensure']
     $title   = $_config['name'] ? {
       undef   => $runner_name,
       default => $_config['name'],
     }
 
     gitlab_ci_runner::runner { $title:
-      ensure  => $ensure,
+      ensure  => $_config['ensure'],
       config  => $_config - ['ensure', 'name'],
-      binary  => $package_name,
       require => Class['gitlab_ci_runner::config'],
       notify  => Class['gitlab_ci_runner::service'],
     }
