@@ -29,6 +29,15 @@ _Private Classes_
 * [`Gitlab_ci_runner::Log_format`](#gitlab_ci_runnerlog_format): Gitlab Runner log format configuration
 * [`Gitlab_ci_runner::Log_level`](#gitlab_ci_runnerlog_level): Gitlab Runner log level configuration
 
+**Functions**
+
+* [`gitlab_ci_runner::register`](#gitlab_ci_runnerregister): A function that registers a Gitlab runner on a Gitlab instance
+* [`gitlab_ci_runner::unregister`](#gitlab_ci_runnerunregister): A function that unregisters a Gitlab runner from a Gitlab instance
+
+**Data types**
+
+* [`Gitlab_ci_runner::Register`](#gitlab_ci_runnerregister): A struct of all possible additionl options for gitlab_ci_runner::register
+
 **Tasks**
 
 * [`register_runner`](#register_runner): Registers a runner on a Gitlab instance.
@@ -322,6 +331,79 @@ Alias of `Enum['runner', 'text', 'json']`
 Gitlab Runner log level configuration
 
 Alias of `Enum['debug', 'info', 'warn', 'error', 'fatal', 'panic']`
+
+## Functions
+
+### gitlab_ci_runner::register
+
+Type: Ruby 4.x API
+
+A function that registers a Gitlab runner on a Gitlab instance
+
+#### `gitlab_ci_runner::register(Stdlib::HTTPUrl $url, String[1] $token, Optional[Gitlab_ci_runner::Register] $additional_options)`
+
+The gitlab_ci_runner::register function.
+
+Returns: `Struct[{ id => Integer[1], token => String[1], }]`
+
+##### `url`
+
+Data type: `Stdlib::HTTPUrl`
+
+The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
+
+##### `token`
+
+Data type: `String[1]`
+
+Registration token.
+
+##### `additional_options`
+
+Data type: `Optional[Gitlab_ci_runner::Register]`
+
+A hash with all additional configuration options for that runner
+
+### gitlab_ci_runner::unregister
+
+Type: Ruby 4.x API
+
+A function that unregisters a Gitlab runner from a Gitlab instance
+
+#### `gitlab_ci_runner::unregister(Stdlib::HTTPUrl $url, String[1] $token)`
+
+The gitlab_ci_runner::unregister function.
+
+Returns: `Struct[{ status => Enum['success'], }]`
+
+##### `url`
+
+Data type: `Stdlib::HTTPUrl`
+
+The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
+
+##### `token`
+
+Data type: `String[1]`
+
+Runners authentication token.
+
+## Data types
+
+### Gitlab_ci_runner::Register
+
+A struct of all possible additionl options for gitlab_ci_runner::register
+
+Alias of `Struct[{
+  Optional[description]     => String[1],
+  Optional[info]            => Hash[String[1],String[1]],
+  Optional[active]          => Boolean,
+  Optional[locked]          => Boolean,
+  Optional[run_untagged]    => Boolean,
+  Optional[tag_list]        => Array[String[1]],
+  Optional[access_level]    => Enum['not_protected', 'ref_protected'],
+  Optional[maximum_timeout] => Integer,
+}]`
 
 ## Tasks
 
