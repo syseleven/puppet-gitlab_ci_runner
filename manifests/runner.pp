@@ -72,12 +72,28 @@ define gitlab_ci_runner::runner (
     undef   => merge($config, { name => $title }),
     default => $config,
   }
+  $__config       = { runners => [ $_config ], }
+  $content_normal = gitlab_ci_runner::to_toml($__config)
 
-  $__config = { runners => [ $_config ], }
+  # $serverversion is empty on 'puppet apply' runs. Just use clientversion.
+  $_serverversion = getvar('serverversion') ? {
+    undef   => $clientversion,
+    default => $serverversion,
+  }
+  # Puppet < 6 doesn't include the Deferred type and will therefore
+  # fail with an compilation error while trying to load the type
+  if versioncmp($clientversion, '6.0') >= 0 and versioncmp($_serverversion, '6.0') >= 0 {
+    $content = $config['token'] =~ Deferred ? {
+      true  => Deferred('gitlab_ci_runner::to_toml', [$__config])
+      false => $content_normal,
+    }
+  } else {
+    $content = $content_normal
+  }
 
   concat::fragment { "${config_path} - ${title}":
     target  => $config_path,
     order   => 2,
-    content => gitlab_ci_runner::to_toml($__config),
+    content => $content,
   }
 }
