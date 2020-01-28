@@ -78,6 +78,6 @@ define gitlab_ci_runner::runner (
   concat::fragment { "${config_path} - ${title}":
     target  => $config_path,
     order   => 2,
-    content => inline_template("<%= require 'toml-rb'; TomlRB.dump(@__config) %>"),
+    content => gitlab_ci_runner::to_toml($__config),
   }
 }

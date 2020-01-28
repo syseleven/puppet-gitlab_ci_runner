@@ -20,6 +20,10 @@ _Private Classes_
 
 * [`gitlab_ci_runner::runner`](#gitlab_ci_runnerrunner): This configures a Gitlab CI runner.
 
+**Functions**
+
+* [`gitlab_ci_runner::to_toml`](#gitlab_ci_runnerto_toml): Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+
 **Data types**
 
 * [`Gitlab_ci_runner::Log_format`](#gitlab_ci_runnerlog_format): Gitlab Runner log format configuration
@@ -262,6 +266,48 @@ Data type: `Hash`
 Hash with configuration options.
 See https://docs.gitlab.com/runner/configuration/advanced-configuration.html for all possible options.
 If you omit the 'name' configuration, we will automatically use the $title of this define class.
+
+## Functions
+
+### gitlab_ci_runner::to_toml
+
+Type: Ruby 4.x API
+
+Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+
+#### Examples
+
+##### How to output TOML to a file
+
+```puppet
+file { '/tmp/config.toml':
+  ensure  => file,
+  content => to_toml($myhash),
+}
+```
+
+#### `gitlab_ci_runner::to_toml(Hash $data)`
+
+The gitlab_ci_runner::to_toml function.
+
+Returns: `String` Converted data as TOML string
+
+##### Examples
+
+###### How to output TOML to a file
+
+```puppet
+file { '/tmp/config.toml':
+  ensure  => file,
+  content => to_toml($myhash),
+}
+```
+
+##### `data`
+
+Data type: `Hash`
+
+Data structure which needs to be converted into TOML
 
 ## Data types
 
