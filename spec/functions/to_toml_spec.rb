@@ -10,7 +10,7 @@ describe 'gitlab_ci_runner::to_toml' do
       1,
       true,
       false,
-      [],
+      []
     ].each do |value|
       it { is_expected.to run.with_params(value).and_raise_error(ArgumentError) }
     end
@@ -18,9 +18,9 @@ describe 'gitlab_ci_runner::to_toml' do
 
   context 'returns TOML string on valid params' do
     it { is_expected.to run.with_params({}).and_return('') }
-    it { is_expected.to run.with_params({foo: 'bar'}).and_return("foo = \"bar\"\n") }
-    it { is_expected.to run.with_params({foo: { bar: 'baz' }}).and_return("[foo]\nbar = \"baz\"\n") }
-    it { is_expected.to run.with_params({foo: ['bar', 'baz']}).and_return("foo = [\"bar\", \"baz\"]\n") }
-    it { is_expected.to run.with_params({foo: [{bar: {}, baz: {}}]}).and_return("[[foo]]\n[foo.bar]\n[foo.baz]\n") }
+    it { is_expected.to run.with_params(foo: 'bar').and_return("foo = \"bar\"\n") }
+    it { is_expected.to run.with_params(foo: { bar: 'baz' }).and_return("[foo]\nbar = \"baz\"\n") }
+    it { is_expected.to run.with_params(foo: %w[bar baz]).and_return("foo = [\"bar\", \"baz\"]\n") }
+    it { is_expected.to run.with_params(foo: [{ bar: {}, baz: {} }]).and_return("[[foo]]\n[foo.bar]\n[foo.baz]\n") }
   end
 end

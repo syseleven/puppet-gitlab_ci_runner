@@ -22,20 +22,15 @@ _Private Classes_
 
 **Functions**
 
+* [`gitlab_ci_runner::register`](#gitlab_ci_runnerregister): A function that registers a Gitlab runner on a Gitlab instance. Be careful, this will be triggered on noop runs as well!
+* [`gitlab_ci_runner::register_to_file`](#gitlab_ci_runnerregister_to_file): A function that registers a Gitlab runner on a Gitlab instance, if it doesn't already exist, _and_ saves the retrived authentication token to
 * [`gitlab_ci_runner::to_toml`](#gitlab_ci_runnerto_toml): Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+* [`gitlab_ci_runner::unregister`](#gitlab_ci_runnerunregister): A function that unregisters a Gitlab runner from a Gitlab instance. Be careful, this will be triggered on noop runs as well!
 
 **Data types**
 
 * [`Gitlab_ci_runner::Log_format`](#gitlab_ci_runnerlog_format): Gitlab Runner log format configuration
 * [`Gitlab_ci_runner::Log_level`](#gitlab_ci_runnerlog_level): Gitlab Runner log level configuration
-
-**Functions**
-
-* [`gitlab_ci_runner::register`](#gitlab_ci_runnerregister): A function that registers a Gitlab runner on a Gitlab instance
-* [`gitlab_ci_runner::unregister`](#gitlab_ci_runnerunregister): A function that unregisters a Gitlab runner from a Gitlab instance
-
-**Data types**
-
 * [`Gitlab_ci_runner::Register`](#gitlab_ci_runnerregister): A struct of all possible additionl options for gitlab_ci_runner::register
 
 **Tasks**
@@ -278,6 +273,124 @@ If you omit the 'name' configuration, we will automatically use the $title of th
 
 ## Functions
 
+### gitlab_ci_runner::register
+
+Type: Ruby 4.x API
+
+A function that registers a Gitlab runner on a Gitlab instance. Be careful, this will be triggered on noop runs as well!
+
+#### Examples
+
+##### Using it as a replacement for the Bolt 'register_runner' task
+
+```puppet
+puppet apply -e "notice(gitlab_ci_runner::register('https://gitlab.com', 'registration-token'))"
+```
+
+#### `gitlab_ci_runner::register(Stdlib::HTTPUrl $url, String[1] $token, Optional[Gitlab_ci_runner::Register] $additional_options)`
+
+A function that registers a Gitlab runner on a Gitlab instance. Be careful, this will be triggered on noop runs as well!
+
+Returns: `Struct[{ id => Integer[1], token => String[1], }]` Returns a hash with the runner id and authentcation token
+
+##### Examples
+
+###### Using it as a replacement for the Bolt 'register_runner' task
+
+```puppet
+puppet apply -e "notice(gitlab_ci_runner::register('https://gitlab.com', 'registration-token'))"
+```
+
+##### `url`
+
+Data type: `Stdlib::HTTPUrl`
+
+The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
+
+##### `token`
+
+Data type: `String[1]`
+
+Registration token.
+
+##### `additional_options`
+
+Data type: `Optional[Gitlab_ci_runner::Register]`
+
+A hash with all additional configuration options for that runner
+
+### gitlab_ci_runner::register_to_file
+
+Type: Ruby 4.x API
+
+A function that registers a Gitlab runner on a Gitlab instance, if it doesn't already exist,
+_and_ saves the retrived authentication token to a file. This is helpful for Deferred functions.
+
+#### Examples
+
+##### Using it as a Deferred function
+
+```puppet
+gitlab_ci_runner::runner { 'testrunner':
+  config               => {
+    'url'              => 'https://gitlab.com',
+    'token'            => Deferred('gitlab_ci_runner::register_runner_to_file', [$config['url'], $config['registration-token'], 'testrunner']) }
+    'executor'         => 'shell',
+  },
+}
+```
+
+#### `gitlab_ci_runner::register_to_file(Stdlib::HTTPUrl $url, String[1] $runner_name, String[1] $regtoken, Optional[Gitlab_ci_runner::Register] $additional_options, Optional[Stdlib::Absolutepath] $filename)`
+
+A function that registers a Gitlab runner on a Gitlab instance, if it doesn't already exist,
+_and_ saves the retrived authentication token to a file. This is helpful for Deferred functions.
+
+Returns: `Struct[{ id => Integer[1], token => String[1], }]` Returns a hash with the runner id and authentcation token
+
+##### Examples
+
+###### Using it as a Deferred function
+
+```puppet
+gitlab_ci_runner::runner { 'testrunner':
+  config               => {
+    'url'              => 'https://gitlab.com',
+    'token'            => Deferred('gitlab_ci_runner::register_runner_to_file', [$config['url'], $config['registration-token'], 'testrunner']) }
+    'executor'         => 'shell',
+  },
+}
+```
+
+##### `url`
+
+Data type: `Stdlib::HTTPUrl`
+
+The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
+
+##### `regtoken`
+
+Data type: `String[1]`
+
+Registration token.
+
+##### `runner_name`
+
+Data type: `String[1]`
+
+The name of the runner. Use as identifier for the retrived auth token.
+
+##### `filename`
+
+Data type: `Optional[Stdlib::Absolutepath]`
+
+The filename where the token should be saved.
+
+##### `additional_options`
+
+Data type: `Optional[Gitlab_ci_runner::Register]`
+
+A hash with all additional configuration options for that runner
+
 ### gitlab_ci_runner::to_toml
 
 Type: Ruby 4.x API
@@ -318,63 +431,33 @@ Data type: `Hash`
 
 Data structure which needs to be converted into TOML
 
-## Data types
-
-### Gitlab_ci_runner::Log_format
-
-Gitlab Runner log format configuration
-
-Alias of `Enum['runner', 'text', 'json']`
-
-### Gitlab_ci_runner::Log_level
-
-Gitlab Runner log level configuration
-
-Alias of `Enum['debug', 'info', 'warn', 'error', 'fatal', 'panic']`
-
-## Functions
-
-### gitlab_ci_runner::register
-
-Type: Ruby 4.x API
-
-A function that registers a Gitlab runner on a Gitlab instance
-
-#### `gitlab_ci_runner::register(Stdlib::HTTPUrl $url, String[1] $token, Optional[Gitlab_ci_runner::Register] $additional_options)`
-
-The gitlab_ci_runner::register function.
-
-Returns: `Struct[{ id => Integer[1], token => String[1], }]`
-
-##### `url`
-
-Data type: `Stdlib::HTTPUrl`
-
-The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
-
-##### `token`
-
-Data type: `String[1]`
-
-Registration token.
-
-##### `additional_options`
-
-Data type: `Optional[Gitlab_ci_runner::Register]`
-
-A hash with all additional configuration options for that runner
-
 ### gitlab_ci_runner::unregister
 
 Type: Ruby 4.x API
 
-A function that unregisters a Gitlab runner from a Gitlab instance
+A function that unregisters a Gitlab runner from a Gitlab instance. Be careful, this will be triggered on noop runs as well!
+
+#### Examples
+
+##### Using it as a replacement for the Bolt 'unregister_runner' task
+
+```puppet
+puppet apply -e "notice(gitlab_ci_runner::unregister('https://gitlab.com', 'runner-auth-token'))"
+```
 
 #### `gitlab_ci_runner::unregister(Stdlib::HTTPUrl $url, String[1] $token)`
 
-The gitlab_ci_runner::unregister function.
+A function that unregisters a Gitlab runner from a Gitlab instance. Be careful, this will be triggered on noop runs as well!
 
-Returns: `Struct[{ status => Enum['success'], }]`
+Returns: `Struct[{ status => Enum['success'], }]` Returns a hash with the runner id and authentcation token
+
+##### Examples
+
+###### Using it as a replacement for the Bolt 'unregister_runner' task
+
+```puppet
+puppet apply -e "notice(gitlab_ci_runner::unregister('https://gitlab.com', 'runner-auth-token'))"
+```
 
 ##### `url`
 
@@ -389,6 +472,18 @@ Data type: `String[1]`
 Runners authentication token.
 
 ## Data types
+
+### Gitlab_ci_runner::Log_format
+
+Gitlab Runner log format configuration
+
+Alias of `Enum['runner', 'text', 'json']`
+
+### Gitlab_ci_runner::Log_level
+
+Gitlab Runner log level configuration
+
+Alias of `Enum['debug', 'info', 'warn', 'error', 'fatal', 'panic']`
 
 ### Gitlab_ci_runner::Register
 

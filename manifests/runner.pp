@@ -65,30 +65,38 @@ define gitlab_ci_runner::runner (
 ) {
   include gitlab_ci_runner
 
-  $config_path = $gitlab_ci_runner::config_path
-
-  # Use title parameter if config hash doesn't contain one.
-  $_config     = $config['name'] ? {
-    undef   => merge($config, { name => $title }),
-    default => $config,
-  }
-  $__config       = { runners => [ $_config ], }
-  $content_normal = gitlab_ci_runner::to_toml($__config)
-
+  $config_path       = $gitlab_ci_runner::config_path
   # $serverversion is empty on 'puppet apply' runs. Just use clientversion.
-  $_serverversion = getvar('serverversion') ? {
+  $_serverversion    = getvar('serverversion') ? {
     undef   => $clientversion,
     default => $serverversion,
   }
+  $supports_deferred = (versioncmp($clientversion, '6.0') >= 0 and versioncmp($_serverversion, '6.0') >= 0)
+
+  # Use title parameter if config hash doesn't contain one.
+  $_config     = $config['name'] ? {
+    undef   => $config + { name => $title },
+    default => $config,
+  }
+
   # Puppet < 6 doesn't include the Deferred type and will therefore
   # fail with an compilation error while trying to load the type
-  if versioncmp($clientversion, '6.0') >= 0 and versioncmp($_serverversion, '6.0') >= 0 {
-    $content = $config['token'] =~ Deferred ? {
-      true  => Deferred('gitlab_ci_runner::to_toml', [$__config])
-      false => $content_normal,
+  if $supports_deferred {
+    if $_config['registration-token'] {
+      $deferred_call = Deferred('gitlab_ci_runner::register_to_file', [ $_config['url'], $_config['registration-token'], $_config['name']])
+
+      # Remove registration-token and add a 'token' key to the config with a Deferred function to get it.
+      $__config = ($_config - 'registration-token') + { 'token' => $deferred_call }
+    } else {
+      $__config = $_config
+    }
+
+    $content = $__config['token'] =~ Deferred ? {
+      true  => Deferred('gitlab_ci_runner::to_toml', [{ runners => [ $__config ], }]),
+      false => gitlab_ci_runner::to_toml({ runners => [ $__config ], }),
     }
   } else {
-    $content = $content_normal
+    $content = gitlab_ci_runner::to_toml({ runners => [ $_config ], })
   }
 
   concat::fragment { "${config_path} - ${title}":
