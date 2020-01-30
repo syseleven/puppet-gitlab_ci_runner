@@ -1,5 +1,5 @@
-require 'toml-rb'
-# @summary Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+require_relative '../../../puppet_x/gitlab/dumper.rb'
+# @summary Convert a data structure and output to TOML.
 #
 # @example How to output TOML to a file
 #   file { '/tmp/config.toml':
@@ -16,6 +16,6 @@ Puppet::Functions.create_function(:'gitlab_ci_runner::to_toml') do
   end
 
   def to_toml(data)
-    TomlRB.dump(data)
+    PuppetX::Gitlab::Dumper.new(data).toml_str
   end
 end

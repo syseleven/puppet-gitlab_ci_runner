@@ -24,7 +24,7 @@ _Private Classes_
 
 * [`gitlab_ci_runner::register`](#gitlab_ci_runnerregister): A function that registers a Gitlab runner on a Gitlab instance. Be careful, this will be triggered on noop runs as well!
 * [`gitlab_ci_runner::register_to_file`](#gitlab_ci_runnerregister_to_file): A function that registers a Gitlab runner on a Gitlab instance, if it doesn't already exist, _and_ saves the retrived authentication token to
-* [`gitlab_ci_runner::to_toml`](#gitlab_ci_runnerto_toml): Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+* [`gitlab_ci_runner::to_toml`](#gitlab_ci_runnerto_toml): Convert a data structure and output to TOML.
 * [`gitlab_ci_runner::unregister`](#gitlab_ci_runnerunregister): A function that unregisters a Gitlab runner from a Gitlab instance. Be careful, this will be triggered on noop runs as well!
 
 **Data types**
@@ -340,12 +340,12 @@ gitlab_ci_runner::runner { 'testrunner':
 }
 ```
 
-#### `gitlab_ci_runner::register_to_file(Stdlib::HTTPUrl $url, String[1] $runner_name, String[1] $regtoken, Optional[Gitlab_ci_runner::Register] $additional_options, Optional[Stdlib::Absolutepath] $filename)`
+#### `gitlab_ci_runner::register_to_file(String[1] $url, String[1] $regtoken, String[1] $runner_name, Optional[Hash] $additional_options, Optional[String[1]] $filename)`
 
 A function that registers a Gitlab runner on a Gitlab instance, if it doesn't already exist,
 _and_ saves the retrived authentication token to a file. This is helpful for Deferred functions.
 
-Returns: `Struct[{ id => Integer[1], token => String[1], }]` Returns a hash with the runner id and authentcation token
+Returns: `String[1]` Returns the authentication token
 
 ##### Examples
 
@@ -363,7 +363,7 @@ gitlab_ci_runner::runner { 'testrunner':
 
 ##### `url`
 
-Data type: `Stdlib::HTTPUrl`
+Data type: `String[1]`
 
 The url to your Gitlab instance. Please only provide the host part (e.g https://gitlab.com)
 
@@ -381,13 +381,13 @@ The name of the runner. Use as identifier for the retrived auth token.
 
 ##### `filename`
 
-Data type: `Optional[Stdlib::Absolutepath]`
+Data type: `Optional[String[1]]`
 
 The filename where the token should be saved.
 
 ##### `additional_options`
 
-Data type: `Optional[Gitlab_ci_runner::Register]`
+Data type: `Optional[Hash]`
 
 A hash with all additional configuration options for that runner
 
@@ -395,7 +395,7 @@ A hash with all additional configuration options for that runner
 
 Type: Ruby 4.x API
 
-Convert a data structure and output to TOML. This function requires the 'toml-rb' gem.
+Convert a data structure and output to TOML.
 
 #### Examples
 
