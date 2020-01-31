@@ -83,10 +83,14 @@ define gitlab_ci_runner::runner (
   # fail with an compilation error while trying to load the type
   if $supports_deferred {
     if $_config['registration-token'] {
-      $deferred_call = Deferred('gitlab_ci_runner::register_to_file', [ $_config['url'], $_config['registration-token'], $_config['name']])
+      $register_additional_options = $config
+                                      .filter |$item| { $item[0] =~ Gitlab_ci_runner::Register_parameter  } # Get all items use for the registration process
+                                      .reduce({}) |$memo, $item| { $memo + { regsubst($item[0], '-', '_', 'G') => $item[1] } } # Ensure all keys use '_' instead of '-'
+
+      $deferred_call = Deferred('gitlab_ci_runner::register_to_file', [ $_config['url'], $_config['registration-token'], $_config['name'], $register_additional_options, ])
 
       # Remove registration-token and add a 'token' key to the config with a Deferred function to get it.
-      $__config = ($_config - 'registration-token') + { 'token' => $deferred_call }
+      $__config = ($_config - 'registration-token') + { 'token' => $deferred_call } - $register_additional_options
     } else {
       $__config = $_config
     }
