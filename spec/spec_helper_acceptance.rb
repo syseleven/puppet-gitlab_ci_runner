@@ -30,8 +30,8 @@ configure_beaker do |host|
 
   # Setup Puppet Bolt
   # DEBUG
-  gitlab_ip = File.read(File.expand_path('~/GITLAB_IP')).chomp
-  puts "gitlab_ip = #{gitlab_ip}"
+#  gitlab_ip = File.read(File.expand_path('~/GITLAB_IP')).chomp
+#  puts "gitlab_ip = #{gitlab_ip}"
   bolt = <<-MANIFEST
   $bolt_config = @("BOLTPROJECT"/L)
   modulepath: "/etc/puppetlabs/code/modules:/etc/puppetlabs/code/environments/production/modules"
@@ -56,10 +56,6 @@ configure_beaker do |host|
     content => $bolt_config,
   }
 
-  file_line { '/etc/hosts-gitlab':
-    path => '/etc/hosts',
-    line => '#{gitlab_ip} gitlab',
-  }
   MANIFEST
   apply_manifest_on(host, bolt, catch_failures: true)
 end
