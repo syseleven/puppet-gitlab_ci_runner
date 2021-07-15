@@ -29,7 +29,9 @@ configure_beaker do |host|
   apply_manifest_on(host, tzdata, catch_failures: true) if fact('os.release.major') =~ %r{(16.04|18.04)}
 
   # Setup Puppet Bolt
+  # DEBUG
   gitlab_ip = File.read(File.expand_path('~/GITLAB_IP')).chomp
+  puts "gitlab_ip = #{gitlab_ip}"
   bolt = <<-MANIFEST
   $bolt_config = @("BOLTPROJECT"/L)
   modulepath: "/etc/puppetlabs/code/modules:/etc/puppetlabs/code/environments/production/modules"
