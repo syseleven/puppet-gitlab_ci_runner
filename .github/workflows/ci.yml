@@ -1,0 +1,35 @@
+name: CI
+
+on: pull_request
+
+jobs:
+  acceptance:
+    runs-on: self-hosted
+    env:
+      BUNDLE_WITHOUT: development:test:release
+    strategy:
+      fail-fast: false
+    name: Puppet 6 - Ubuntu 18.04
+    services:
+      gitlab:
+        image: gitlab/gitlab-ce
+        ports:
+          - 80:80
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+      - name: Set Gitlab variables
+        run: |
+          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.gitlab.id }} > ~/GITLAB_IP
+          echo 'puts "INSTANCE TOKEN: #{Gitlab::CurrentSettings.current_application_settings.runners_registration_token}"' | \
+            docker exec -i ${{ job.services.gitlab.id }} gitlab-rails console | \
+            awk '/^INSTANCE TOKEN:/ {print $NF}' > ~/INSTANCE_TOKEN
+      - name: Run tests
+        run: bundle exec rake beaker
+        env:
+          BEAKER_PUPPET_COLLECTION: puppet6
+          BEAKER_setfile: ubuntu1804-64{hostname=ubuntu1804-64.example.com}

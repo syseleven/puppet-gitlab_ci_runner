@@ -29,38 +29,33 @@ configure_beaker do |host|
   apply_manifest_on(host, tzdata, catch_failures: true) if fact('os.release.major') =~ %r{(16.04|18.04)}
 
   # Setup Puppet Bolt
-  gitlab_ip = File.read(File.expand_path('~/GITLAB_IP')).chomp
+  # DEBUG
+#  gitlab_ip = File.read(File.expand_path('~/GITLAB_IP')).chomp
+#  puts "gitlab_ip = #{gitlab_ip}"
   bolt = <<-MANIFEST
-  $bolt_config = @("GITCONFIG"/L)
+  $bolt_config = @("BOLTPROJECT"/L)
   modulepath: "/etc/puppetlabs/code/modules:/etc/puppetlabs/code/environments/production/modules"
-  ssh:
-    host-key-check: false
-    user: root
-    password: root
-  | GITCONFIG
+  analytics: false
+  | BOLTPROJECT
 
   package { 'puppet-bolt':
     ensure => installed,
   }
 
-  file { [ '/root/.puppetlabs', '/root/.puppetlabs/bolt']:
+  file { [ '/root/.puppetlabs', '/root/.puppetlabs/bolt', '/root/.puppetlabs/etc', '/root/.puppetlabs/etc/bolt']:
     ensure => directory,
   }
 
-  file { '/root/.puppetlabs/bolt/analytics.yaml':
+  # Needs to existing to not trigger a warning sign...
+  file { '/root/.puppetlabs/etc/bolt/analytics.yaml':
     ensure  => file,
-    content => "disabled: true\n",
   }
 
-  file { '/root/.puppetlabs/bolt/bolt.yaml':
+  file { '/root/.puppetlabs/bolt/bolt-project.yaml':
     ensure  => file,
     content => $bolt_config,
   }
 
-  file_line { '/etc/hosts-gitlab':
-    path => '/etc/hosts',
-    line => '#{gitlab_ip} gitlab',
-  }
   MANIFEST
   apply_manifest_on(host, bolt, catch_failures: true)
 end
