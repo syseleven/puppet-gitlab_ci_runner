@@ -9,9 +9,6 @@ jobs:
       BUNDLE_WITHOUT: development:test:release
     strategy:
       fail-fast: false
-      matrix:
-        setfile: 'ubuntu1804-64{hostname=ubuntu1804-64.example.com}'
-        puppet: puppet6
     name: Puppet 6 - Ubuntu 18.04
     services:
       gitlab:
